@@ -1,0 +1,13 @@
+[Unit]
+Description=uWSGI instance to serve with Flask + Nginx in this project
+After=network.target
+
+[Service]
+User=serhiy
+Group=www-data
+WorkingDirectory=/home/serhiy/www/flask-nginx.loc
+Environment="PATH=/home/serhiy/www/flask-nginx.loc/venv/bin"
+ExecStart=/home/serhiy/www/flask-nginx.loc/venv/bin/uwsgi --ini project.ini
+
+[Install]
+WantedBy=multi-user.target
