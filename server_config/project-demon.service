@@ -1,14 +1,14 @@
 [Unit]
-Description=uWSGI instance to serve with Flask + Nginx in this project
+Description=uWSGI instance to serve with Flask + Nginx in this projectName
 After=network.target
 
 [Service]
-User=serhiy
+User=userName
 Group=www-data
 Restart=always
-WorkingDirectory=/home/serhiy/www/flask-nginx
-Environment="PATH=/home/serhiy/www/flask-nginx/venv/bin"
-ExecStart=/home/serhiy/www/flask-nginx/venv/bin/uwsgi --ini server_config/project.ini
+WorkingDirectory=pathProject
+Environment="PATH=pathProject/venv/bin"
+ExecStart=pathProject/venv/bin/uwsgi --ini server_config/project.ini
 
 [Install]
 WantedBy=multi-user.target
