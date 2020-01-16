@@ -2,3 +2,4 @@
 venv
 logs
 __pycache__
+server_config/project-demon.pid
