@@ -6,8 +6,8 @@
 
 ### Installation:
 
-If the project folder is on a different drive than the system then you need to copy the configuration files. 
-This requires uncomment lines(54,62) and comment lines(52,60) in file `server_config/install.sh` .
+If the project folder is on a different drive than the system then the configuration files will be copied to the corresponding folders, 
+otherwise hard links will be created there.
 
 For setup project need run next commands:
 ```shell script
