@@ -32,7 +32,7 @@ sed -i -e "s|pathProject|$PATH_PROJECT|g" "$PATH_PROJECT/server_config/project.i
 sed -i -e "s|pathProject|$PATH_PROJECT|g" "$PATH_PROJECT/server_config/nginx.conf"
 sed -i -e "s|projectName|$HOST_PROJECT|g" "$PATH_PROJECT/server_config/nginx.conf"
 
-#Update all packeges and insatll python3 + pip3 + other lib (ssl-dev + ffi-dev) + setuptools + python3-venv
+#Update all packeges and insatll python3 + pip3 + other lib (ssl-dev + ffi-dev) + setuptools + python3-venv + nginx
 sudo apt update -y
 sudo apt install -y nginx
 sudo apt install -y python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools
@@ -49,16 +49,17 @@ deactivate
 sudo -u "$SUDO_USER" mkdir -p logs
 PROJECT_DEMON_IN_SYSTEM="/etc/systemd/system/$NAME_PROJECT_DEMAN.service"
 if [ ! -f "$PROJECT_DEMON_IN_SYSTEM" ]; then
-#  sudo ln "$PATH_PROJECT/server_config/project-demon.service" "$PROJECT_DEMON_IN_SYSTEM"
-  sudo cp "$PATH_PROJECT/server_config/project-demon.service" "$PROJECT_DEMON_IN_SYSTEM"
+  sudo ln "$PATH_PROJECT/server_config/project-demon.service" "$PROJECT_DEMON_IN_SYSTEM"
+#Project dir on a different drive than the system, need to uncomment the previous line and comment next line.
+#  sudo cp "$PATH_PROJECT/server_config/project-demon.service" "$PROJECT_DEMON_IN_SYSTEM"
   echo Create hardlink for project demon with :
   echo name : "$NAME_PROJECT_DEMAN" and
   echo path : "$PROJECT_DEMON_IN_SYSTEM"
 fi
 if [ ! -f "/etc/nginx/conf.d/$HOST_PROJECT.conf" ]; then
-#  sudo ln "$PATH_PROJECT/server_config/nginx.conf" "/etc/nginx/conf.d/$HOST_PROJECT.conf"
-#problem with anather disk
-  sudo cp "$PATH_PROJECT/server_config/nginx.conf" "/etc/nginx/conf.d/$HOST_PROJECT.conf"
+  sudo ln "$PATH_PROJECT/server_config/nginx.conf" "/etc/nginx/conf.d/$HOST_PROJECT.conf"
+#Project dir on a different drive than the system, need to uncomment the previous line and comment next line.
+#  sudo cp "$PATH_PROJECT/server_config/nginx.conf" "/etc/nginx/conf.d/$HOST_PROJECT.conf"
   echo Create hard link for a nginx-configuration file of this project with :
   echo path "/etc/nginx/conf.d/$HOST_PROJECT.conf"
   echo "$(hostname -i)       $HOST_PROJECT" >> /etc/hosts
