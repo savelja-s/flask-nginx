@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+#Create and set permissions sock file from communicate python with nginx
+touch project.sock
+chown "$SUDO_USER":www-data project.sock
 # Need run with root permissions this script
 cd ..
 PATH_PROJECT="$PWD"

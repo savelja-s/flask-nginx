@@ -2,4 +2,5 @@
 venv
 logs
 __pycache__
-server_config/project-demon.pid
+server_config/*
+!server_config/templates/.gitkeep 
