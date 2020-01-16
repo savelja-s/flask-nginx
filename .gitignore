@@ -2,5 +2,8 @@
 venv
 logs
 __pycache__
-server_config/*
-!server_config/templates/.gitkeep
+server_config/nginx.conf
+server_config/project.ini
+server_config/project.sock
+server_config/project-demon.pid
+server_config/project-demon.service
