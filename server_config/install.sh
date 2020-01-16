@@ -1,21 +1,24 @@
 #!/usr/bin/env bash
 
-#Create and set permissions sock file from communicate python with nginx
-touch project.sock
-chown "$SUDO_USER":www-data project.sock
 # Need run with root permissions this script
+
+#Copy config files
+sudo -u "$SUDO_USER" cp templates/project.ini .
+sudo -u "$SUDO_USER" cp templates/nginx.conf .
+sudo -u "$SUDO_USER" cp templates/project-demon.service .
+
 cd ..
 PATH_PROJECT="$PWD"
 echo "$PATH_PROJECT"
 
 echo Enter some web-hostname for project but without spaces:
 read HOST_PROJECT
-if [ -z "$HOST_PROJECT" ]; then
+if [[ -z "$HOST_PROJECT" ]]; then
   echo You entered bad host :"$HOST_PROJECT".
   HOST_PROJECT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
   echo Set random project host: "$HOST_PROJECT"
 fi
-if [[ $HOST_PROJECT =~ [' ./;`_-%$#@!)(=+*^~?><\,'] ]]; then
+if [[ "$HOST_PROJECT" =~ [' /;`%$#@!)(=+*^~?><\,'] ]]; then
   echo You entered bad host :"$HOST_PROJECT".
   HOST_PROJECT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
   echo Set random project host: "$HOST_PROJECT"
@@ -32,6 +35,7 @@ sed -i -e "s|userName|$SUDO_USER|g" "$PATH_TEMPLATE_PROJECT_DEMAN"
 sed -i -e "s|pathProject|$PATH_PROJECT|g" "$PATH_TEMPLATE_PROJECT_DEMAN"
 
 sed -i -e "s|pathProject|$PATH_PROJECT|g" "$PATH_PROJECT/server_config/project.ini"
+sed -i -e "s|userName|$SUDO_USER|g" "$PATH_PROJECT/server_config/project.ini"
 sed -i -e "s|pathProject|$PATH_PROJECT|g" "$PATH_PROJECT/server_config/nginx.conf"
 sed -i -e "s|projectName|$HOST_PROJECT|g" "$PATH_PROJECT/server_config/nginx.conf"
 
@@ -50,28 +54,41 @@ deactivate
 
 #Create a folder `logs` if it does not exist
 sudo -u "$SUDO_USER" mkdir -p logs
+
 PROJECT_DEMON_IN_SYSTEM="/etc/systemd/system/$NAME_PROJECT_DEMAN.service"
-if [ ! -f "$PROJECT_DEMON_IN_SYSTEM" ]; then
-  sudo ln "$PATH_PROJECT/server_config/project-demon.service" "$PROJECT_DEMON_IN_SYSTEM"
-#Project dir on a different drive than the system, need to uncomment the previous line and comment next line.
-#  sudo cp "$PATH_PROJECT/server_config/project-demon.service" "$PROJECT_DEMON_IN_SYSTEM"
-  echo Create hardlink for project demon with :
-  echo name : "$NAME_PROJECT_DEMAN" and
-  echo path : "$PROJECT_DEMON_IN_SYSTEM"
+if [[ ! -f "$PROJECT_DEMON_IN_SYSTEM" ]]
+then
+    if [[ "$(findmnt -T / --df -o SOURCE -n)" == "$(findmnt -T $PWD --df -o SOURCE -n)" ]]
+    then
+        sudo ln "$PATH_PROJECT/server_config/project-demon.service" "$PROJECT_DEMON_IN_SYSTEM"
+        echo Create hard link for project demon with :
+    else
+        #Project dir on a different drive than the system
+        echo Copy file for project demon with :
+        sudo cp "$PATH_PROJECT/server_config/project-demon.service" "$PROJECT_DEMON_IN_SYSTEM"
+    fi
 fi
-if [ ! -f "/etc/nginx/conf.d/$HOST_PROJECT.conf" ]; then
-  sudo ln "$PATH_PROJECT/server_config/nginx.conf" "/etc/nginx/conf.d/$HOST_PROJECT.conf"
-#Project dir on a different drive than the system, need to uncomment the previous line and comment next line.
-#  sudo cp "$PATH_PROJECT/server_config/nginx.conf" "/etc/nginx/conf.d/$HOST_PROJECT.conf"
-  echo Create hard link for a nginx-configuration file of this project with :
-  echo path "/etc/nginx/conf.d/$HOST_PROJECT.conf"
-  echo "$(hostname -i)       $HOST_PROJECT" >> /etc/hosts
-  echo Write new host in file /etc/hosts
-  sudo /etc/init.d/nginx stop
-  sudo /etc/init.d/nginx start
+echo name : "$NAME_PROJECT_DEMAN" and
+echo path : "$PROJECT_DEMON_IN_SYSTEM"
+if [[ ! -f "/etc/nginx/conf.d/$HOST_PROJECT.conf" ]]
+then
+    if [[ "$(findmnt -T / --df -o SOURCE -n)" == "$(findmnt -T $PWD --df -o SOURCE -n)" ]]
+    then
+        sudo ln "$PATH_PROJECT/server_config/nginx.conf" "/etc/nginx/conf.d/$HOST_PROJECT.conf"
+        echo Create hard link for a nginx-configuration file of this project with :
+    else
+        #Project dir on a different drive than the system
+        echo Copy file for a nginx-configuration file of this project with :
+        sudo cp "$PATH_PROJECT/server_config/nginx.conf" "/etc/nginx/conf.d/$HOST_PROJECT.conf"
+    fi
+    echo path "/etc/nginx/conf.d/$HOST_PROJECT.conf"
+    echo "$(hostname -i)       $HOST_PROJECT" >> /etc/hosts
+    echo Write new host in file /etc/hosts
+    sudo /etc/init.d/nginx stop
+    sudo /etc/init.d/nginx start
 fi
 sudo systemctl start "$NAME_PROJECT_DEMAN"
 #systemctl status flask-project
 sudo systemctl enable "$NAME_PROJECT_DEMAN"
-sudo -u "$SUDO_USER" firefox -new-tab "http://$HOST_PROJECT" &
+sudo -u "$SUDO_USER" firefox -new-tab "http://$HOST_PROJECT" > /dev/null &
 exit
